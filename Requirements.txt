@@ -1,4 +1,4 @@
 numpy==1.26.4
 scikit-learn==1.4.1
 streamlit==1.37.1
-streamlit-option-menu==0.4.0myenv\Scripts\activate
+streamlit-option-menu==0.4.0
