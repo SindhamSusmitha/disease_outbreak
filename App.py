@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import pickle # pre trained model loading
 import streamlit as st    # web app
 from streamlit_option_menu import option_menu
@@ -9,6 +10,12 @@ st.set_page_config(page_title='Prediction of Disease Outbreaks',
 diabetes_model= pickle.load(open(r"C:\Users\Admin\OneDrive\Desktop\Prediction_of_disease_outbreaks\Savedmodels\diabetes_model.sav",'rb'))
 heart_disease_model=pickle.load(open(r"C:\Users\Admin\OneDrive\Desktop\Prediction_of_disease_outbreaks\Savedmodels\heart_model.sav",'rb'))
 parkinsons_model= pickle.load(open(r"C:\Users\Admin\OneDrive\Desktop\Prediction_of_disease_outbreaks\Savedmodels\parkinsons_model.sav",'rb'))
+
+# Load scalers (Ensure these files exist)
+diabetes_scaler = pickle.load(open(r"C:\Users\Admin\OneDrive\Desktop\Prediction_of_disease_outbreaks\Savedmodels\diabetes_scaler.sav", 'rb'))
+heart_scaler = pickle.load(open(r"C:\Users\Admin\OneDrive\Desktop\Prediction_of_disease_outbreaks\Savedmodels\heart_scaler.sav", 'rb'))
+parkinsons_scaler = pickle.load(open(r"C:\Users\Admin\OneDrive\Desktop\Prediction_of_disease_outbreaks\Savedmodels\parkinsons_scaler.pkl", 'rb'))
+
 
 with st.sidebar:
     selected= option_menu('Prediction of disease outbreak system',
@@ -35,12 +42,21 @@ if selected == 'Diabetes Prediction':
     with col2:
         Age= st.text_input('Age of the person')
 
+
+
+
+
+
+
 diab_diagnosis = ''
 if st.button('Diabetes Test Result'):
     user_input=[Pregnancies, Glucose, Bloodpressure, SkinThickness, Insulin,
                       BMI, DiabetesPedigreeFunction, Age]
     user_input= [float(x) for x in user_input]
-    diab_prediction= diabetes_model.predict([user_input])
+
+    user_input_reshaped = np.array(user_input).reshape(1, -1)
+    user_input_scaled = diabetes_scaler.transform(user_input_reshaped)
+    diab_prediction= diabetes_model.predict(user_input_scaled)
     if diab_prediction[0]==1:
         diab_diagnosis= 'The person is diabetic'
     else:
@@ -55,7 +71,7 @@ if selected =='Heart Disease Prediction':
     col1, col2, col3 =st.columns(3)
 
     with col1:
-        age=st.text_input('Age')
+        age=st.text_input('age')
     with col2:
         sex=st.text_input('Sex')
     with col3:
@@ -87,9 +103,11 @@ heart_diagnosis=''
 if st.button('Heart Disease Test Result'):
     user_input= [age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal] 
     user_input=[float(x) for x in user_input]
+    user_input_reshaped = np.array(user_input).reshape(1, -1)
+    
+    user_input_scaled = heart_scaler.transform(user_input_reshaped)
 
-    heart_prediction=heart_disease_model.predict([user_input])
-
+    heart_prediction = heart_disease_model.predict(user_input_scaled)
     if heart_prediction[0]==1:
         heart_diagnosis='The person is having heart disease'
     else:
@@ -105,7 +123,7 @@ if selected == "Parkinsons prediction":
     col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
-        fo=st.text_input('MDVP:Fo(Hz)')
+        fo=st.text_input('MDVP:Fo(Hz)') 
     with col2:
         fhi = st.text_input('MDVP:Fhi(Hz)')
     with col3:
@@ -160,8 +178,10 @@ if st.button("Parkinson's Test Result"):
     user_input=[fo, fhi, flo, Jitter_percent, Jitter_Abs, RAP, PPQ, DDP, Shimmer, Shimmer_dB, APQ3, APQ5, APQ, DDA, NHR, HNR, RPDE, DFA,spread1, spread1, D2, PPE]
 
     user_input =[float(x) for x in user_input]
+    user_input_reshaped = np.array(user_input).reshape(1, -1)
+    user_input_scaled = parkinsons_scaler.transform(user_input_reshaped)
 
-    parkinsons_prediction = parkinsons_model.predict([user_input])    
+    parkinsons_prediction = parkinsons_model.predict(user_input_scaled)    
 
     if parkinsons_prediction[0] ==1:
         parkinsons_diagnosis = "The person has Parkinson's disease"
